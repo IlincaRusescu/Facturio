@@ -5,17 +5,25 @@ const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY
 
 if (!supabaseUrl || !supabaseKey) {
-  throw new Error(
-    'Lipsesc SUPABASE_URL sau SUPABASE_PUBLISHABLE_KEY din .env'
-  )
+  throw new Error('Configuratia Supabase lipseste')
 }
 
-export function createSupabaseClient() {
-  return createClient(supabaseUrl, supabaseKey, {
+export function createSupabaseClient(accessToken = null) {
+  const options = {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
       detectSessionInUrl: false
     }
-  })
+  }
+
+  if (accessToken) {
+    options.global = {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    }
+  }
+
+  return createClient(supabaseUrl, supabaseKey, options)
 }
