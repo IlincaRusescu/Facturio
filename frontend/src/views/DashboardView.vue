@@ -1,6 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
 import { getCurrentUser } from '../services/auth.service.js'
+import { clearSession } from '../services/session.service.js'
+
+const router = useRouter()
 
 const user = ref(null)
 const loading = ref(true)
@@ -16,12 +21,22 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+function handleLogout() {
+  clearSession()
+  user.value = null
+  router.replace('/login')
+}
 </script>
+
+
+
 
 <template>
   <main class="dashboard-page">
     <section class="dashboard-card">
       <h1>FACTURIO</h1>
+
       <p v-if="loading">Se incarca profilul...</p>
 
       <p v-else-if="errorMessage" class="error">
@@ -54,10 +69,19 @@ onMounted(async () => {
           Gestionarea clientilor si a facturilor
           va fi disponibila in sprinturile urmatoare.
         </p>
+
+        <button
+          type="button"
+          class="logout-button"
+          @click="handleLogout"
+        >
+          Deconectare
+        </button>
       </template>
     </section>
   </main>
 </template>
+
 
 <style scoped>
 .dashboard-page {
@@ -101,4 +125,27 @@ h2 {
 .error {
   color: #a32540;
 }
+
+.logout-button {
+  margin-top: 16px;
+  padding: 12px 24px;
+  background: #8965db;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.logout-button:hover {
+  background: #7550c9;
+}
+
+.logout-button:focus-visible {
+  outline: 3px solid #c5aff3;
+  outline-offset: 3px;
+}
+
 </style>
