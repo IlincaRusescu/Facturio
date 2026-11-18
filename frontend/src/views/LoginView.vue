@@ -1,49 +1,16 @@
 <script setup>
-import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import facturioLogo from '../assets/facturio-logo.png'
-import { loginUser } from '../services/auth.service.js'
-import { saveSession } from '../services/session.service.js'
+import { useLogin } from '../composables/useLogin.js'
 
-const router = useRouter()
-
-const form = reactive({
-  email: '',
-  password: ''
-})
-
-const loading = ref(false)
-const showPassword = ref(false)
-const errorMessage = ref('')
-
-async function handleSubmit() {
-  if (loading.value) return
-
-  errorMessage.value = ''
-
-  if (!form.email.trim() || !form.password) {
-    errorMessage.value = 'Completeaza emailul si parola.'
-    return
-  }
-
-  loading.value = true
-
-  try {
-    const result = await loginUser({
-      email: form.email.trim().toLowerCase(),
-      password: form.password
-    })
-
-    saveSession(result.session)
-    await router.push('/dashboard')
-  } catch (error) {
-    errorMessage.value =
-      error.message || 'Autentificarea a esuat.'
-  } finally {
-    loading.value = false
-  }
-}
+const {
+  form,
+  loading,
+  showPassword,
+  errorMessage,
+  handleSubmit
+} = useLogin()
 </script>
+
 
 <template>
   <div class="login-page">

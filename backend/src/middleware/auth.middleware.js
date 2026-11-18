@@ -2,26 +2,30 @@ import {
   createSupabaseClient
 } from '../config/supabase.js'
 
-// Verifica tokenul si identifica firma utilizatorului
+// Extrage tokenul din antetul Authorization
+function extractBearerToken(authorization = '') {
+  const match = authorization.match(/^Bearer\s+(.+)$/i)
+
+  return match ? match[1].trim() : null
+}
+
+// Verifica autentificarea si identifica firma utilizatorului
 export function createRequireAuth(supabase) {
   return async (req, res, next) => {
-    const authorization = req.headers.authorization || ''
-
-    const match = authorization.match(
-      /^Bearer\s+(.+)$/i
+    const token = extractBearerToken(
+      req.headers.authorization || ''
     )
 
-    if (!match) {
+    // 1. Verificam daca exista token
+    if (!token) {
       return res.status(401).json({
         success: false,
         message: 'Autentificare necesara'
       })
     }
 
-    const token = match[1].trim()
-
     try {
-      // Verificarea tokenului la Supabase Auth
+      // 2. Validam tokenul prin Supabase Auth
       const { data, error } =
         await supabase.auth.getUser(token)
 
@@ -32,7 +36,7 @@ export function createRequireAuth(supabase) {
         })
       }
 
-      // Citim profilul in contextul utilizatorului
+      // 3. Preluam profilul utilizatorului autentificat
       const userSupabase = createSupabaseClient(token)
 
       const { data: profile, error: profileError } =
@@ -49,6 +53,7 @@ export function createRequireAuth(supabase) {
         })
       }
 
+      // 4. Atasam identitatea verificata cererii
       req.user = {
         id: data.user.id,
         email: data.user.email,
@@ -71,7 +76,7 @@ export function createRequireAuth(supabase) {
   }
 }
 
-// Permite accesul doar la firma utilizatorului
+// Permite accesul doar la compania utilizatorului
 export function requireCompanyAccess(req, res, next) {
   const requestedCompanyId = req.params.companyId
   const userCompanyId = req.user?.companyId
