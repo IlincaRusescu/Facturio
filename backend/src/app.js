@@ -1,6 +1,8 @@
 import express from 'express'
 import cors from 'cors'
+
 import authRoutes from './routes/auth.routes.js'
+import clientsRoutes from './routes/clients.routes.js'
 
 const app = express()
 
@@ -22,5 +24,8 @@ app.get('/api/health', (req, res) => {
 
 // Rute pentru autentificare si inregistrare
 app.use('/api/auth', authRoutes)
+
+// Rute pentru gestionarea clientilor
+app.use('/api/clients', clientsRoutes)
 
 export default app
