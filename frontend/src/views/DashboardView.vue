@@ -65,9 +65,14 @@ function handleLogout() {
           </p>
         </div>
 
+        <div class="dashboard-actions">
+          <RouterLink to="/clients" class="clients-link">
+            Gestioneaza clientii
+          </RouterLink>
+        </div>
+
         <p class="note">
-          Gestionarea clientilor si a facturilor
-          va fi disponibila in sprinturile urmatoare.
+          Poti adauga, actualiza si sterge clientii companiei tale.
         </p>
 
         <button
@@ -146,6 +151,24 @@ h2 {
 .logout-button:focus-visible {
   outline: 3px solid #c5aff3;
   outline-offset: 3px;
+}
+
+.dashboard-actions {
+  margin-top: 24px;
+}
+
+.clients-link {
+  display: inline-block;
+  padding: 12px 24px;
+  border-radius: 10px;
+  background: #6341c0;
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.clients-link:hover {
+  background: #51339e;
 }
 
 </style>

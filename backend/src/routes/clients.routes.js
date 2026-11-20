@@ -11,7 +11,8 @@ import {
 import {
   createClient,
   getClients,
-  deleteClient
+  deleteClient,
+  updateClient
 } from '../services/clients.service.js'
 
 const router = Router()
@@ -105,6 +106,32 @@ router.delete('/:id', async (req, res) => {
 
   return res.status(200).json(result)
 })
+
+
+// PUT /api/clients/:id - Actualizare date client
+router.put('/:id', async (req, res) => {
+  const result = await updateClient(
+    req.params.id,
+    req.body,
+    req.user,
+    req.supabase
+  )
+
+  if (!result.success) {
+    const errors = result.errors || []
+
+    if (errors.includes('Clientul nu a fost gasit')) {
+      return res.status(404).json(result)
+    }
+
+    const status = getErrorStatus(errors)
+
+    return res.status(status).json(result)
+  }
+
+  return res.status(200).json(result)
+})
+
 
 
 export default router

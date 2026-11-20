@@ -1,27 +1,41 @@
+
 import { ref, onMounted } from 'vue'
 
 import {
   fetchClients,
   addClient,
-  deleteClient
+  deleteClient,
+  updateClient
 } from '../services/clients.service.js'
 
-// Gestioneaza datele si operatiile pentru clienti
+// Gestioneaza operatiile de adaugare, editare si stergere clienti
 export function useClients() {
   const clients = ref([])
   const loading = ref(false)
   const saving = ref(false)
   const deletingId = ref(null)
 
+  const editingId = ref(null)
+
   const errors = ref([])
   const successMessage = ref('')
 
-  const form = ref({
-    name: '',
-    cui: '',
-    address: '',
-    email: ''
-  })
+  function emptyForm() {
+    return {
+      name: '',
+      cui: '',
+      address: '',
+      email: ''
+    }
+  }
+
+  const form = ref(emptyForm())
+
+  // Reseteaza formularul si iese din modul de editare
+  function resetClientForm() {
+    editingId.value = null
+    form.value = emptyForm()
+  }
 
   // Incarca lista clientilor companiei autentificate
   async function loadClients() {
@@ -37,24 +51,54 @@ export function useClients() {
     }
   }
 
-  // Salveaza clientul si actualizeaza lista
+  // Pregateste formularul pentru editarea unui client
+  function startEdit(client) {
+    editingId.value = client.id
+
+    form.value = {
+      name: client.name,
+      cui: client.cui,
+      address: client.address,
+      email: client.email
+    }
+
+    errors.value = []
+    successMessage.value = ''
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }
+
+  // Renunta la editare si reseteaza formularul
+  function cancelEdit() {
+    resetClientForm()
+
+    errors.value = []
+    successMessage.value = ''
+  }
+
+  // Salveaza un client nou sau actualizeaza unul existent
   async function submitClient() {
     errors.value = []
     successMessage.value = ''
     saving.value = true
 
     try {
-      await addClient(form.value)
+      if (editingId.value) {
+        await updateClient(editingId.value, form.value)
 
-      successMessage.value =
-        'Clientul a fost adaugat cu succes!'
+        successMessage.value =
+          'Clientul a fost actualizat cu succes!'
+      } else {
+        await addClient(form.value)
 
-      form.value = {
-        name: '',
-        cui: '',
-        address: '',
-        email: ''
+        successMessage.value =
+          'Clientul a fost adaugat cu succes!'
       }
+
+      resetClientForm()
 
       await loadClients()
     } catch (error) {
@@ -64,8 +108,7 @@ export function useClients() {
     }
   }
 
-
-  // Sterge clientul dupa confirmarea utilizatorului
+  // Sterge definitiv clientul dupa confirmare
   async function removeClient(client) {
     const confirmed = window.confirm(
       `Esti sigur ca vrei sa stergi clientul "${client.name}"?\n\n` +
@@ -87,6 +130,10 @@ export function useClients() {
 
       await loadClients()
 
+      if (editingId.value === client.id) {
+        resetClientForm()
+      }
+
       if (errors.value.length === 0) {
         successMessage.value =
           'Clientul a fost sters definitiv cu succes!'
@@ -98,7 +145,6 @@ export function useClients() {
     }
   }
 
-
   onMounted(loadClients)
 
   return {
@@ -106,11 +152,14 @@ export function useClients() {
     loading,
     saving,
     deletingId,
+    editingId,
     errors,
     successMessage,
     form,
     loadClients,
     submitClient,
+    startEdit,
+    cancelEdit,
     removeClient
   }
 }

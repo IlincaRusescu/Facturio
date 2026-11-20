@@ -51,3 +51,15 @@ export async function deleteClient(clientId) {
     method: 'DELETE'
   })
 }
+
+
+// Actualizeaza datele unui client existent
+export async function updateClient(clientId, client) {
+  return requestClients(
+    `/${encodeURIComponent(clientId)}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify(client)
+    }
+  )
+}

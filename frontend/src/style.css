@@ -316,3 +316,68 @@ button:disabled {
     font-size: 21px;
   }
 }
+
+
+/* US-04 GREEN - Editare clienti */
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.cancel-edit-button {
+  margin-top: 22px;
+  padding: 13px 20px;
+  border: 1px solid #d6cbe9;
+  border-radius: 9px;
+  background: white;
+  color: #6840a3;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancel-edit-button:hover:not(:disabled) {
+  background: #f7f4ff;
+}
+
+.cancel-edit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.client-row-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.edit-client-button {
+  padding: 9px 16px;
+  border: 1px solid #d4c2f0;
+  border-radius: 8px;
+  background: #f2eaff;
+  color: #6341c0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.edit-client-button:hover:not(:disabled) {
+  background: #e7d8ff;
+}
+
+.edit-client-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.edit-client-button:focus-visible,
+.cancel-edit-button:focus-visible {
+  outline: 3px solid #c5aff3;
+  outline-offset: 2px;
+}

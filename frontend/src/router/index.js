@@ -1,3 +1,4 @@
+
 import {
   createRouter,
   createWebHistory
@@ -6,9 +7,16 @@ import {
 import RegisterView from '../views/RegisterView.vue'
 import LoginView from '../views/LoginView.vue'
 import DashboardView from '../views/DashboardView.vue'
+import ClientsView from '../views/ClientsView.vue'
 
-import { getAccessToken, clearSession } from '../services/session.service.js'
-import { getCurrentUser } from '../services/auth.service.js'
+import {
+  getAccessToken,
+  clearSession
+} from '../services/session.service.js'
+
+import {
+  getCurrentUser
+} from '../services/auth.service.js'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -28,6 +36,11 @@ const router = createRouter({
     {
       path: '/dashboard',
       component: DashboardView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/clients',
+      component: ClientsView,
       meta: { requiresAuth: true }
     }
   ]

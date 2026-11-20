@@ -1,3 +1,4 @@
+
 import { randomUUID } from 'node:crypto'
 
 import {
@@ -15,6 +16,27 @@ function failure(message) {
     success: false,
     errors: [message]
   }
+}
+
+// Pregateste datele comune pentru adaugare si actualizare
+function prepareClientData(client) {
+  return {
+    name: client.name.trim(),
+    cui: client.cui.trim(),
+    address: client.address.trim(),
+    email: client.email.trim()
+  }
+}
+
+// Gestioneaza erorile de salvare si actualizare a clientilor
+function handleClientError(error, defaultMessage) {
+  if (error.code === '23505') {
+    return failure(
+      'Exista deja un client cu acest CUI in companie'
+    )
+  }
+
+  return failure(defaultMessage)
 }
 
 // Creeaza un client pentru compania autentificata
@@ -35,10 +57,7 @@ export async function createClient(client, user, supabase) {
   const newClient = {
     id: randomUUID(),
     company_id: user.companyId,
-    name: client.name.trim(),
-    cui: client.cui.trim(),
-    address: client.address.trim(),
-    email: client.email.trim()
+    ...prepareClientData(client)
   }
 
   try {
@@ -49,13 +68,10 @@ export async function createClient(client, user, supabase) {
       .single()
 
     if (error) {
-      if (error.code === '23505') {
-        return failure(
-          'Exista deja un client cu acest CUI in companie'
-        )
-      }
-
-      return failure('Nu s-a putut salva clientul')
+      return handleClientError(
+        error,
+        'Nu s-a putut salva clientul'
+      )
     }
 
     return {
@@ -93,8 +109,7 @@ export async function getClients(user, supabase) {
   }
 }
 
-
- // Sterge definitiv clientul companiei autentificate
+// Sterge definitiv clientul companiei autentificate
 export async function deleteClient(clientId, user, supabase) {
   if (!hasCompanyAccess(user, supabase)) {
     return failure('Autentificare necesara')
@@ -126,3 +141,48 @@ export async function deleteClient(clientId, user, supabase) {
   }
 }
 
+// Actualizeaza datele unui client din compania autentificata
+export async function updateClient(clientId, client, user, supabase) {
+  const validation = createClientValidator(client)
+
+  if (!validation.valid) {
+    return {
+      success: false,
+      errors: validation.errors
+    }
+  }
+
+  if (!hasCompanyAccess(user, supabase)) {
+    return failure('Autentificare necesara')
+  }
+
+  const updatedData = prepareClientData(client)
+
+  try {
+    const { data, error } = await supabase
+      .from('clients')
+      .update(updatedData)
+      .eq('id', clientId)
+      .eq('company_id', user.companyId)
+      .select()
+      .maybeSingle()
+
+    if (error) {
+      return handleClientError(
+        error,
+        'Nu s-a putut actualiza clientul'
+      )
+    }
+
+    if (!data) {
+      return failure('Clientul nu a fost gasit')
+    }
+
+    return {
+      success: true,
+      client: data
+    }
+  } catch {
+    return failure('Nu s-a putut actualiza clientul')
+  }
+}
