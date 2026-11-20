@@ -4,6 +4,10 @@ import { createSupabaseClient } from '../config/supabase.js'
 import { createRequireAuth } from '../middleware/auth.middleware.js'
 import { createInvoice } from '../services/invoices.service.js'
 
+import {
+  exportInvoicePdf
+} from '../services/invoice-pdf.service.js'
+
 const router = Router()
 const authSupabase = createSupabaseClient()
 
@@ -226,5 +230,48 @@ router.post('/', async (req, res) => {
 
   return res.status(201).json(result)
 })
+
+
+// Descarca PDF-ul unei facturi salvate.
+// Ruta este protejata de middleware-ul de autentificare.
+router.get('/:id/pdf', async (req, res) => {
+  if (!req.user?.companyId) {
+    return res.status(401).json({
+      success: false,
+      errors: ['Autentificare necesara']
+    })
+  }
+
+  const result = await exportInvoicePdf(
+    req.params.id,
+    req.user,
+    userSupabase(req)
+  )
+
+  if (!result.success) {
+    const notFound = result.errors?.includes(
+      'Factura nu a fost gasita'
+    )
+
+    return res.status(notFound ? 404 : 400).json(result)
+  }
+
+  res.setHeader('Content-Type', 'application/pdf')
+
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="${result.filename}"`
+  )
+
+  res.setHeader(
+    'Access-Control-Expose-Headers',
+    'Content-Disposition'
+  )
+
+  res.setHeader('Content-Length', result.buffer.length)
+
+  return res.status(200).send(result.buffer)
+})
+
 
 export default router
